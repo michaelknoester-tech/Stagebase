@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StageBase — Technische Venue Database</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #17181a;
+    --surface2: #1f2022;
+    --border: #2e2f32;
+    --accent: #e8c84a;
+    --accent2: #4ae8b0;
+    --red: #e84a4a;
+    --text: #e8e6e0;
+    --muted: #7a7870;
+    --font-display: 'Fraunces', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .logo span { color: var(--text); font-weight: 300; font-style: italic; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 14px;
+    width: 260px;
+    transition: border-color .2s;
+  }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: var(--font-mono); font-size: 12px; width: 100%;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+
+  .btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #0e0e0f; font-weight: 500; }
+  .btn-primary:hover { background: #f0d460; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: var(--red); color: white; }
+
+  /* LAYOUT */
+  .app { display: flex; height: calc(100vh - 57px); }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 280px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .sidebar-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .sidebar-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .venue-count {
+    background: var(--surface2);
+    color: var(--muted);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+
+  .filter-strip {
+    padding: 10px 12px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-chip {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(232,200,74,0.08); }
+  .filter-chip:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+  .venue-list { padding: 8px 0; }
+
+  .venue-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all .15s;
+    position: relative;
+  }
+  .venue-item:hover { background: var(--surface); }
+  .venue-item.active { background: var(--surface); border-left-color: var(--accent); }
+
+  .venue-item-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .venue-item-meta { color: var(--muted); font-size: 11px; display: flex; gap: 10px; }
+  .venue-item-type {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+  }
+  .type-theater { background: rgba(74,232,176,0.1); color: var(--accent2); border: 1px solid rgba(74,232,176,0.3); }
+  .type-poppodium { background: rgba(232,200,74,0.1); color: var(--accent); border: 1px solid rgba(232,200,74,0.3); }
+  .type-schouwburg { background: rgba(200,74,232,0.1); color: #c84ae8; border: 1px solid rgba(200,74,232,0.3); }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; overflow-y: auto; background: var(--bg); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--muted);
+    gap: 16px;
+    text-align: center;
+    padding: 40px;
+  }
+  .empty-state-icon { font-size: 48px; opacity: .5; }
+  .empty-state h2 { font-family: var(--font-display); font-weight: 300; font-style: italic; font-size: 28px; color: var(--text); }
+  .empty-state p { max-width: 320px; line-height: 1.6; }
+
+  /* VENUE DETAIL */
+  .venue-detail { padding: 32px 40px; animation: fadeUp .3s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 42px;
+    line-height: 1;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .detail-subtitle { color: var(--muted); font-size: 12px; display: flex; gap: 16px; align-items: center; }
+
+  .detail-actions { display: flex; gap: 8px; }
+
+  /* GRID SECTIONS */
+  .sections-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .section-card:hover { border-color: var(--muted); }
+  .section-card.full-width { grid-column: 1 / -1; }
+
+  .section-header {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+  }
+
+  .section-icon { font-size: 14px; }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .section-body { padding: 16px 18px; }
+
+  /* DATA ROWS */
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .data-row:last-child { border-bottom: none; }
+
+  .data-label { color: var(--muted); font-size: 11px; flex-shrink: 0; }
+  .data-value { color: var(--text); font-size: 12px; text-align: right; }
+  .data-value.highlight { color: var(--accent); font-weight: 500; }
+
+  /* CONTACTS */
+  .contact-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .contact-card:last-child { margin-bottom: 0; }
+  .contact-name { font-weight: 500; font-size: 13px; margin-bottom: 4px; }
+  .contact-role { color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+  .contact-detail { font-size: 11px; color: var(--muted); line-height: 1.7; }
+  .contact-detail a { color: var(--accent2); text-decoration: none; }
+
+  /* NOTES */
+  .notes-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    min-height: 80px;
+  }
+
+  /* IMAGES */
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .image-placeholder {
+    aspect-ratio: 4/3;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 10px;
+    gap: 6px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .image-placeholder:hover { border-color: var(--accent); color: var(--accent); }
+  .image-placeholder-icon { font-size: 20px; }
+
+  .image-thumb {
+    aspect-ratio: 4/3;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .image-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .image-thumb .remove-img {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,.7);
+    color: var(--red); border: none; border-radius: 2px;
+    width: 20px; height: 20px; font-size: 12px;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
+  }
+  .image-thumb:hover .remove-img { display: flex; }
+
+  /* COMPARE PANEL */
+  .compare-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--accent);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 200;
+    transform: translateY(100%);
+    transition: transform .25s ease;
+  }
+  .compare-bar.visible { transform: translateY(0); }
+  .compare-bar-label { color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; }
+  .compare-chips { display: flex; gap: 8px; flex: 1; }
+  .compare-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .compare-chip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: fadeUp .25s ease;
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .modal-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 18px; cursor: pointer; line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* FORM */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+  .form-select option { background: var(--surface2); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-section-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--muted); margin: 20px 0 12px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  /* COMPARE VIEW */
+  .compare-view { padding: 32px 40px; animation: fadeUp .3s ease; }
+  .compare-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 32px;
+    margin-bottom: 24px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .compare-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .compare-table th:first-child { color: var(--muted); font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1.5px; }
+  .compare-table td {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .compare-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .compare-table td:first-child { color: var(--muted); font-size: 11px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .badge-green { background: rgba(74,232,176,0.1); color: var(--accent2); border: 1px solid rgba(74,232,176,0.2); }
+  .badge-yellow { background: rgba(232,200,74,0.1); color: var(--accent); border: 1px solid rgba(232,200,74,0.2); }
+  .badge-gray { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .no-venues-sidebar {
+    padding: 24px 20px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
+    text-align: center;
+  }
+
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Stage<span>Base</span></div>
+  <div class="header-actions">
+    <div class="search-bar">
+      <span style="color:var(--muted)">⌕</span>
+      <input type="text" id="searchInput" placeholder="Zoek venue, stad, techniek..." oninput="filterVenues()">
+    </div>
+    <button class="btn btn-ghost" onclick="toggleCompareView()" id="compareBtn" style="display:none">Vergelijk (<span id="compareCount">0</span>)</button>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Venue toevoegen</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Venues</span>
+      <span class="venue-count" id="venueCount">0</span>
+    </div>
+    <div class="filter-strip">
+      <button class="filter-chip active" data-filter="all" onclick="setFilter(this,'all')">Alles</button>
+      <button class="filter-chip" data-filter="theater" onclick="setFilter(this,'theater')">Theater</button>
+      <button class="filter-chip" data-filter="schouwburg" onclick="setFilter(this,'schouwburg')">Schouwburg</button>
+      <button class="filter-chip" data-filter="poppodium" onclick="setFilter(this,'poppodium')">Poppodium</button>
+    </div>
+    <div class="venue-list" id="venueList"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state-icon">🎭</div>
+      <h2>Nog geen venues</h2>
+      <p>Voeg je eerste theater, schouwburg of poppodium toe om te beginnen met je technische database.</p>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Eerste venue toevoegen</button>
+    </div>
+  </main>
+</div>
+
+<!-- COMPARE BAR -->
+<div class="compare-bar" id="compareBar">
+  <span class="compare-bar-label">⚡ Vergelijken</span>
+  <div class="compare-chips" id="compareChips"></div>
+  <button class="btn btn-primary" onclick="showCompareView()">Bekijk vergelijking →</button>
+  <button class="btn btn-ghost" onclick="clearCompare()">Wissen</button>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Venue toevoegen</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Algemeen -->
+      <div class="form-section-label">Algemene informatie</div>
+      <div class="form-group">
+        <label class="form-label">Naam venue *</label>
+        <input type="text" class="form-input" id="f_naam" placeholder="bijv. Carré Amsterdam">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="f_type">
+            <option value="theater">Theater</option>
+            <option value="schouwburg">Schouwburg</option>
+            <option value="poppodium">Poppodium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stad</label>
+          <input type="text" class="form-input" id="f_stad" placeholder="bijv. Amsterdam">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adres</label>
+        <input type="text" class="form-input" id="f_adres" placeholder="bijv. Amstel 115-125, Amsterdam">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Website</label>
+        <input type="text" class="form-input" id="f_website" placeholder="bijv. https://theater.nl">
+      </div>
+
+      <!-- Podium -->
+      <div class="form-section-label">Podiumafmetingen & vloeropbouw</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Podiumdiepte (m)</label>
+          <input type="text" class="form-input" id="f_diepte" placeholder="bijv. 12">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Podiumhoogte/breedte (m)</label>
+          <input type="text" class="form-input" id="f_breedte" placeholder="bijv. 14">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Toneeloppervlak (m²)</label>
+          <input type="text" class="form-input" id="f_oppervlak" placeholder="bijv. 168">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vliegerhoogte (m)</label>
+          <input type="text" class="form-input" id="f_vliegerhoogte" placeholder="bijv. 18">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vloertype</label>
+          <input type="text" class="form-input" id="f_vloertype" placeholder="bijv. hardhout, podiumdelen">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Draagvermogen vloer (kg/m²)</label>
+          <input type="text" class="form-input" id="f_draagvermogen" placeholder="bijv. 500">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capaciteit (zaal)</label>
+        <input type="text" class="form-input" id="f_capaciteit" placeholder="bijv. 900 zittend / 1200 staand">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Overige podiuminfo</label>
+        <textarea class="form-textarea" id="f_podiuminfo" placeholder="Bijv. orkestbak, draaischijf, aanwezigheid van vaste rigging..."></textarea>
+      </div>
+
+      <!-- Licht & Geluid -->
+      <div class="form-section-label">Licht- en geluidsinstallaties</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Lichtconsole type</label>
+          <input type="text" class="form-input" id="f_lichtconsole" placeholder="bijv. GrandMA3">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dimmers/circuits</label>
+          <input type="text" class="form-input" id="f_dimmers" placeholder="bijv. 192 dimmerkanalen">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Geluidsconsole type</label>
+          <input type="text" class="form-input" id="f_geluidsconsole" placeholder="bijv. Digico SD10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PA systeem</label>
+          <input type="text" class="form-input" id="f_pa" placeholder="bijv. L-Acoustics K2">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Overige licht/geluid info</label>
+        <textarea class="form-textarea" id="f_lginfo" placeholder="Aanwezige apparatuur, bijzonderheden..."></textarea>
+      </div>
+
+      <!-- Contacten -->
+      <div class="form-section-label">Contactpersonen</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Technisch directeur — naam</label>
+          <input type="text" class="form-input" id="f_td_naam" placeholder="Naam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Technisch directeur — email</label>
+          <input type="text" class="form-input" id="f_td_email" placeholder="email@venue.nl">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lichtchef — naam</label>
+          <input type="text" class="form-input" id="f_lc_naam" placeholder="Naam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lichtchef — email/tel</label>
+          <input type="text" class="form-input" id="f_lc_contact" placeholder="email of telefoonnummer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Geluidschef — naam</label>
+          <input type="text" class="form-input" id="f_gc_naam" placeholder="Naam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Geluidschef — email/tel</label>
+          <input type="text" class="form-input" id="f_gc_contact" placeholder="email of telefoonnummer">
+        </div>
+      </div>
+
+      <!-- Laad & Toegang -->
+      <div class="form-section-label">Laad- en toegangsroutes</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Laaddeurgrootte (b × h meter)</label>
+          <input type="text" class="form-input" id="f_laaddeur" placeholder="bijv. 4m × 4.5m">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Laadperron hoogte</label>
+          <input type="text" class="form-input" id="f_laadperron" placeholder="bijv. gelijkvloers / 0.9m">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parkeerplaatsen vrachtwagens</label>
+          <input type="text" class="form-input" id="f_parkeer" placeholder="bijv. 3 vrachtwagens">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Afstand laadplek → podium (m)</label>
+          <input type="text" class="form-input" id="f_afstand" placeholder="bijv. 15m via lift">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Overige laad/toegangsinfo</label>
+        <textarea class="form-textarea" id="f_laadinfo" placeholder="Bijzonderheden, tijdvensters, vergunningen..."></textarea>
+      </div>
+
+      <!-- Productie -->
+      <div class="form-section-label">Productie & backstage</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Aantal kleedkamers</label>
+          <input type="text" class="form-input" id="f_kleedkamers" placeholder="bijv. 6 kleedkamers">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kleedkamer capaciteit</label>
+          <input type="text" class="form-input" id="f_kleedkamer_cap" placeholder="bijv. 2× solo, 4× groep (8 pers.)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Artiestenfoyer</label>
+          <input type="text" class="form-input" id="f_artiestenfoyer" placeholder="bijv. Ja, 40 personen">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Douches</label>
+          <input type="text" class="form-input" id="f_douches" placeholder="bijv. 4 douches backstage">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catering ruimte</label>
+          <input type="text" class="form-input" id="f_catering" placeholder="bijv. Ja, eigen keuken">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Wifi backstage</label>
+          <input type="text" class="form-input" id="f_wifi" placeholder="bijv. Ja, netwerknaam op aanvraag">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Productiekantoor</label>
+          <input type="text" class="form-input" id="f_prodkantoor" placeholder="bijv. Ja, met printer">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Toegankelijkheid</label>
+          <input type="text" class="form-input" id="f_toegankelijkheid" placeholder="bijv. Rolstoeltoegankelijk backstage">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Overige productie-info</label>
+        <textarea class="form-textarea" id="f_prodinfo" placeholder="Bijzonderheden backstage, routing cast..."></textarea>
+      </div>
+
+      <!-- Notities -->
+      <div class="form-section-label">Notities</div>
+      <div class="form-group">
+        <label class="form-label">Algemene notities / bijzonderheden</label>
+        <textarea class="form-textarea" id="f_notities" style="min-height:100px" placeholder="Eigen aantekeningen over deze venue..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuleer</button>
+      <button class="btn btn-primary" onclick="saveVenue()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="imageUpload" accept="image/*" multiple onchange="handleImageUpload(event)">
+<input type="file" id="docUpload" accept=".pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf" multiple onchange="handleDocUpload(event)">
+
+<script>
+const BUILTIN_IDS = ['v_carre','v_chasse','v_ita','v_circustheater','v_beatrix','v_delamar','v_groningen','v_orpheus','v_parktheater','v_luxor','v_ssbu_blauw'];
+let venues = JSON.parse(localStorage.getItem('stagebase_venues') || '[]');
+// Strip old built-in venues so they get refreshed with latest data
+venues = venues.filter(v => !BUILTIN_IDS.includes(v.id));
+let currentVenueId = null;
+let editingId = null;
+let activeFilter = 'all';
+let compareList = [];
+let currentImageVenueId = null;
+
+function save() {
+  localStorage.setItem('stagebase_venues', JSON.stringify(venues));
+}
+
+function setFilter(el, f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSidebar();
+}
+
+function filterVenues() {
+  renderSidebar();
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return venues.filter(v => {
+    const matchFilter = activeFilter === 'all' || v.type === activeFilter;
+    const matchSearch = !q || v.naam.toLowerCase().includes(q) || (v.stad||'').toLowerCase().includes(q) || (v.lichtconsole||'').toLowerCase().includes(q) || (v.geluidsconsole||'').toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+
+function renderSidebar() {
+  const list = document.getElementById('venueList');
+  const filtered = getFiltered();
+  document.getElementById('venueCount').textContent = filtered.length;
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="no-venues-sidebar">Geen venues gevonden.<br>Pas je filter aan of voeg een venue toe.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(v => `
+    <div class="venue-item ${v.id === currentVenueId ? 'active' : ''}" onclick="selectVenue('${v.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">
+        <div class="venue-item-name">${v.naam}</div>
+        <span class="venue-item-type type-${v.type}">${v.type}</span>
+      </div>
+      <div class="venue-item-meta">
+        <span>${v.stad || '—'}</span>
+        ${v.capaciteit ? `<span>↟ ${v.capaciteit}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectVenue(id) {
+  currentVenueId = id;
+  renderSidebar();
+  renderDetail(id);
+}
+
+function renderDetail(id) {
+  const v = venues.find(x => x.id === id);
+  if (!v) return;
+  const main = document.getElementById('mainContent');
+  document.getElementById('emptyState')?.remove();
+
+  const inCompare = compareList.includes(id);
+
+  main.innerHTML = `
+    <div class="venue-detail" id="venueDetail">
+      <div class="detail-header">
+        <div>
+          <div class="detail-title">${v.naam}</div>
+          <div class="detail-subtitle">
+            <span class="venue-item-type type-${v.type}">${v.type}</span>
+            <span>${v.stad || ''}</span>
+            ${v.adres ? `<span>${v.adres}</span>` : ''}
+            ${v.website ? `<a href="${v.website}" target="_blank" style="color:var(--accent2)">${v.website}</a>` : ''}
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn btn-ghost" onclick="toggleCompare('${id}')" id="compareToggleBtn">
+            ${inCompare ? '✓ In vergelijking' : '+ Vergelijken'}
+          </button>
+          <button class="btn btn-ghost" onclick="openEditModal('${id}')">✎ Bewerken</button>
+          <button class="btn btn-danger" onclick="deleteVenue('${id}')">✕ Verwijder</button>
+        </div>
+      </div>
+
+      <div class="sections-grid">
+        <!-- PODIUM -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">🎭</span>
+            <span class="section-title">Podiumafmetingen</span>
+          </div>
+          <div class="section-body">
+            ${row('Diepte', v.diepte ? v.diepte + ' m' : '—')}
+            ${row('Breedte / hoogte opening', v.breedte ? v.breedte + ' m' : '—')}
+            ${row('Toneeloppervlak', v.oppervlak ? v.oppervlak + ' m²' : '—', true)}
+            ${row('Vliegerhoogte', v.vliegerhoogte ? v.vliegerhoogte + ' m' : '—')}
+            ${row('Vloertype', v.vloertype || '—')}
+            ${row('Draagvermogen', v.draagvermogen ? v.draagvermogen + ' kg/m²' : '—')}
+            ${row('Capaciteit', v.capaciteit || '—', true)}
+            ${v.podiuminfo ? `<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6">${v.podiuminfo}</div>` : ''}
+          </div>
+        </div>
+
+        <!-- LICHT & GELUID -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">💡</span>
+            <span class="section-title">Licht & Geluid</span>
+          </div>
+          <div class="section-body">
+            ${row('Lichtconsole', v.lichtconsole || '—', true)}
+            ${row('Dimmers / circuits', v.dimmers || '—')}
+            ${row('Geluidsconsole', v.geluidsconsole || '—', true)}
+            ${row('PA systeem', v.pa || '—')}
+            ${v.lginfo ? `<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6">${v.lginfo}</div>` : ''}
+          </div>
+        </div>
+
+        <!-- LAAD & TOEGANG -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">🚛</span>
+            <span class="section-title">Laad & Toegang</span>
+          </div>
+          <div class="section-body">
+            ${row('Laaddeur (b × h)', v.laaddeur || '—', true)}
+            ${row('Laadperron hoogte', v.laadperron || '—')}
+            ${row('Vrachtwagen parkeren', v.parkeer || '—')}
+            ${row('Afstand → podium', v.afstand || '—')}
+            ${v.laadinfo ? `<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6">${v.laadinfo}</div>` : ''}
+          </div>
+        </div>
+
+        <!-- CONTACTEN -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">👤</span>
+            <span class="section-title">Contactpersonen</span>
+          </div>
+          <div class="section-body">
+            ${contactCard('Technisch Directeur', v.td_naam, v.td_email)}
+            ${contactCard('Lichtchef', v.lc_naam, v.lc_contact)}
+            ${contactCard('Geluidschef', v.gc_naam, v.gc_contact)}
+          </div>
+        </div>
+
+        <!-- NOTITIES -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">📝</span>
+            <span class="section-title">Notities</span>
+          </div>
+          <div class="section-body">
+            <div class="notes-area">${v.notities || 'Geen notities.'}</div>
+          </div>
+        </div>
+
+        <!-- PRODUCTIE -->
+        <div class="section-card">
+          <div class="section-header">
+            <span class="section-icon">🎬</span>
+            <span class="section-title">Productie & Backstage</span>
+          </div>
+          <div class="section-body">
+            ${row('Kleedkamers', v.kleedkamers || '—', true)}
+            ${row('Capaciteit kleedkamers', v.kleedkamer_cap || '—')}
+            ${row('Artiestenfoyer', v.artiestenfoyer || '—')}
+            ${row('Douches', v.douches || '—')}
+            ${row('Catering ruimte', v.catering || '—')}
+            ${row('Wifi backstage', v.wifi || '—')}
+            ${row('Productiekantoor', v.prodkantoor || '—')}
+            ${row('Toegankelijkheid', v.toegankelijkheid || '—')}
+            ${v.prodinfo ? '<div style="margin-top:10px;color:var(--muted);font-size:11px;line-height:1.6">' + v.prodinfo + '</div>' : ''}
+          </div>
+        </div>
+
+        <!-- DOCUMENTEN & PLATTEGRONDEN -->
+        <div class="section-card full-width">
+          <div class="section-header">
+            <span class="section-icon">📐</span>
+            <span class="section-title">Plattegronden, Tekeningen & Foto's</span>
+          </div>
+          <div class="section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px">Documenten (PDF)</div>
+                <div id="docsGrid_${id}">
+                  ${renderDocs(v)}
+                  <div class="image-placeholder" onclick="triggerDocUpload('${id}')" style="height:48px;flex-direction:row;gap:8px;justify-content:flex-start;padding:0 14px">
+                    <span style="font-size:16px">+</span>
+                    <span>PDF toevoegen (plattegrond, trekkenlijst…)</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px">Foto's & afbeeldingen</div>
+                <div class="images-grid" id="imagesGrid_${id}">
+                  ${renderImages(v)}
+                  <div class="image-placeholder" onclick="triggerImageUpload('${id}')">
+                    <span class="image-placeholder-icon">+</span>
+                    <span>Afbeelding toevoegen</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function row(label, value, highlight = false) {
+  return `<div class="data-row"><span class="data-label">${label}</span><span class="data-value ${highlight ? 'highlight' : ''}">${value}</span></div>`;
+}
+
+function contactCard(role, naam, contact) {
+  if (!naam && !contact) return '';
+  return `<div class="contact-card">
+    <div class="contact-role">${role}</div>
+    <div class="contact-name">${naam || '—'}</div>
+    <div class="contact-detail">${contact ? `<a href="${contact.includes('@') ? 'mailto:' : 'tel:'}${contact}">${contact}</a>` : ''}</div>
+  </div>`;
+}
+
+function renderImages(v) {
+  if (!v.images || v.images.length === 0) return '';
+  return v.images.map((img, i) => `
+    <div class="image-thumb">
+      <img src="${img}" alt="venue afbeelding">
+      <button class="remove-img" onclick="removeImage('${v.id}', ${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function renderDocs(v) {
+  if (!v.docs || v.docs.length === 0) return '';
+  return v.docs.map((doc, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:6px">
+      <span style="font-size:16px;flex-shrink:0">📄</span>
+      <a href="${doc.data}" download="${doc.name}" style="color:var(--accent2);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${doc.name}</a>
+      <button onclick="removeDoc('${v.id}', ${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+    </div>
+  `).join('');
+}
+
+let currentDocVenueId = null;
+
+function triggerDocUpload(venueId) {
+  currentDocVenueId = venueId;
+  document.getElementById('docUpload').click();
+}
+
+function handleDocUpload(e) {
+  const files = Array.from(e.target.files);
+  const v = venues.find(x => x.id === currentDocVenueId);
+  if (!v) return;
+  if (!v.docs) v.docs = [];
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      v.docs.push({ name: file.name, data: ev.target.result });
+      loaded++;
+      if (loaded === files.length) { save(); renderDetail(currentDocVenueId); }
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function removeDoc(venueId, idx) {
+  const v = venues.find(x => x.id === venueId);
+  if (v && v.docs) { v.docs.splice(idx, 1); save(); renderDetail(venueId); }
+}
+
+function triggerImageUpload(venueId) {
+  currentImageVenueId = venueId;
+  document.getElementById('imageUpload').click();
+}
+
+function handleImageUpload(e) {
+  const files = Array.from(e.target.files);
+  const v = venues.find(x => x.id === currentImageVenueId);
+  if (!v) return;
+  if (!v.images) v.images = [];
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      v.images.push(ev.target.result);
+      loaded++;
+      if (loaded === files.length) {
+        save();
+        renderDetail(currentImageVenueId);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function removeImage(venueId, idx) {
+  const v = venues.find(x => x.id === venueId);
+  if (v && v.images) {
+    v.images.splice(idx, 1);
+    save();
+    renderDetail(venueId);
+  }
+}
+
+// MODAL
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Venue toevoegen';
+  clearForm();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id) {
+  editingId = id;
+  const v = venues.find(x => x.id === id);
+  document.getElementById('modalTitle').textContent = 'Venue bewerken';
+  const fields = ['naam','type','stad','adres','website','diepte','breedte','oppervlak','vliegerhoogte','vloertype','draagvermogen','capaciteit','podiuminfo','lichtconsole','dimmers','geluidsconsole','pa','lginfo','td_naam','td_email','lc_naam','lc_contact','gc_naam','gc_contact','laaddeur','laadperron','parkeer','afstand','laadinfo','kleedkamers','kleedkamer_cap','groenroom','douches','catering','wifi','prodkantoor','toegankelijkheid','prodinfo','notities'];
+  fields.forEach(f => {
+    const el = document.getElementById('f_' + f);
+    if (el) el.value = v[f] || '';
+  });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function clearForm() {
+  const fields = ['naam','stad','adres','website','diepte','breedte','oppervlak','vliegerhoogte','vloertype','draagvermogen','capaciteit','podiuminfo','lichtconsole','dimmers','geluidsconsole','pa','lginfo','td_naam','td_email','lc_naam','lc_contact','gc_naam','gc_contact','laaddeur','laadperron','parkeer','afstand','laadinfo','kleedkamers','kleedkamer_cap','groenroom','douches','catering','wifi','prodkantoor','toegankelijkheid','prodinfo','notities'];
+  fields.forEach(f => {
+    const el = document.getElementById('f_' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('f_type').value = 'theater';
+}
+
+function saveVenue() {
+  const naam = document.getElementById('f_naam').value.trim();
+  if (!naam) { document.getElementById('f_naam').focus(); return; }
+  const fields = ['naam','type','stad','adres','website','diepte','breedte','oppervlak','vliegerhoogte','vloertype','draagvermogen','capaciteit','podiuminfo','lichtconsole','dimmers','geluidsconsole','pa','lginfo','td_naam','td_email','lc_naam','lc_contact','gc_naam','gc_contact','laaddeur','laadperron','parkeer','afstand','laadinfo','kleedkamers','kleedkamer_cap','groenroom','douches','catering','wifi','prodkantoor','toegankelijkheid','prodinfo','notities'];
+  const data = {};
+  fields.forEach(f => {
+    const el = document.getElementById('f_' + f);
+    if (el) data[f] = el.value.trim();
+  });
+
+  if (editingId) {
+    const idx = venues.findIndex(x => x.id === editingId);
+    const oldImages = venues[idx].images;
+    venues[idx] = { ...data, id: editingId, images: oldImages || [] };
+  } else {
+    data.id = 'v_' + Date.now();
+    data.images = [];
+    venues.push(data);
+    currentVenueId = data.id;
+  }
+
+  save();
+  closeModal();
+  renderSidebar();
+
+  const showId = editingId || currentVenueId;
+  renderDetail(showId);
+  currentVenueId = showId;
+}
+
+function deleteVenue(id) {
+  if (!confirm('Weet je zeker dat je deze venue wilt verwijderen?')) return;
+  venues = venues.filter(v => v.id !== id);
+  compareList = compareList.filter(x => x !== id);
+  currentVenueId = null;
+  save();
+  renderSidebar();
+  updateCompareBar();
+  const main = document.getElementById('mainContent');
+  main.innerHTML = `<div class="empty-state" id="emptyState">
+    <div class="empty-state-icon">🎭</div>
+    <h2>Selecteer een venue</h2>
+    <p>Kies een venue uit de lijst of voeg een nieuwe toe.</p>
+    <button class="btn btn-primary" onclick="openAddModal()">+ Venue toevoegen</button>
+  </div>`;
+}
+
+// COMPARE
+function toggleCompare(id) {
+  if (compareList.includes(id)) {
+    compareList = compareList.filter(x => x !== id);
+  } else if (compareList.length < 4) {
+    compareList.push(id);
+  }
+  updateCompareBar();
+  renderDetail(id);
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('compareBar');
+  const chips = document.getElementById('compareChips');
+  const btn = document.getElementById('compareBtn');
+
+  if (compareList.length > 0) {
+    bar.classList.add('visible');
+    btn.style.display = 'block';
+    document.getElementById('compareCount').textContent = compareList.length;
+    chips.innerHTML = compareList.map(id => {
+      const v = venues.find(x => x.id === id);
+      return `<div class="compare-chip">${v ? v.naam : id}<button onclick="toggleCompare('${id}')">✕</button></div>`;
+    }).join('');
+  } else {
+    bar.classList.remove('visible');
+    btn.style.display = 'none';
+  }
+}
+
+function clearCompare() {
+  compareList = [];
+  updateCompareBar();
+  if (currentVenueId) renderDetail(currentVenueId);
+}
+
+function toggleCompareView() {
+  if (compareList.length >= 2) showCompareView();
+}
+
+function showCompareView() {
+  if (compareList.length < 2) return;
+  const selected = compareList.map(id => venues.find(x => x.id === id)).filter(Boolean);
+  const main = document.getElementById('mainContent');
+  currentVenueId = null;
+  renderSidebar();
+
+  const fields = [
+    ['Type', 'type'],
+    ['Stad', 'stad'],
+    ['Capaciteit', 'capaciteit'],
+    ['Podiumdiepte', 'diepte', 'm'],
+    ['Podiumhoogte/breedte', 'breedte', 'm'],
+    ['Vliegerhoogte', 'vliegerhoogte', 'm'],
+    ['Vloertype', 'vloertype'],
+    ['Draagvermogen vloer', 'draagvermogen', 'kg/m²'],
+    ['Lichtconsole', 'lichtconsole'],
+    ['Dimmers', 'dimmers'],
+    ['Geluidsconsole', 'geluidsconsole'],
+    ['PA systeem', 'pa'],
+    ['Laaddeur (b × h)', 'laaddeur'],
+    ['Laadperron hoogte', 'laadperron'],
+    ['Parkeren vrachtw.', 'parkeer'],
+  ];
+
+  main.innerHTML = `<div class="compare-view">
+    <button class="btn btn-ghost" onclick="selectVenue('${selected[0].id}')" style="margin-bottom:16px">← Terug</button>
+    <div class="compare-title">Vergelijking</div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Eigenschap</th>
+          ${selected.map(v => `<th>${v.naam}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${fields.map(([label, key, unit='']) => `
+          <tr>
+            <td>${label}</td>
+            ${selected.map(v => `<td>${v[key] ? v[key] + (unit ? ' ' + unit : '') : '<span style="color:var(--border)">—</span>'}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// Close modal on backdrop click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Init
+renderSidebar();
+
+// Add NL venues if empty
+// Always seed built-in venues (user venues are preserved above)
+  if (true) {
+  const nlVenues = [
+    {
+      id: 'v_carre',
+      naam: 'Koninklijk Theater Carré',
+      type: 'theater',
+      stad: 'Amsterdam',
+      adres: 'Amstel 115-125, 1018 EM Amsterdam',
+      website: 'https://carre.nl',
+      diepte: '15',
+      breedte: '21',
+      oppervlak: '315',
+      vliegerhoogte: '20.95',
+      vloertype: 'Toneel hardhout',
+      draagvermogen: '',
+      capaciteit: '~900 zittend',
+      podiuminfo: 'Breedte toneelvloer: 29m. Breedte speelvlak: 21m. Diepte toneel: 15m. Toneeltoren: 24m. Hoogste stand trekken: 20,95m. Roedelengte: 20,45m. 72 trekken + 4 zijtrekken (max. 500kg). Toneelgrid: 12 punttrekken × 1000kg. Zaalgrid: 46 takels. TNM-besturing. 8 extra flybars SynchroonSchijf.',
+      lichtconsole: 'Op aanvraag (zie lichtplan carre.nl)',
+      dimmers: 'Zie lichtplan carre.nl',
+      geluidsconsole: 'L\'Acoustics LA Network Manager',
+      pa: 'L\'Acoustics: main L/R 12× KARAi per zijde, sub 4× SB28 per zijde + centrum, fill 5× KIVA II + SB15, delay 5× ARCS, FOH 4× 5XT. Versterkers: LA4X en LA8.',
+      lginfo: 'Bekabeling FOH + podium: 12× analoog + 12× AES, 4× CAT5e. Intercom: Clear-Com draadloos (7 beltpacks gastgebruik) + bekabeld. Krachtstroom: 380A Powerlock achter, diverse 63A/32A/125A CEE rondom.',
+      td_naam: 'Marco Hartendorf',
+      td_email: 'marco.hartendorf@carre.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '020-5249410',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: '',
+      afstand: '',
+      laadinfo: 'Laad & los + artiestingang: Onbekendegracht 22, 1018 XR Amsterdam',
+      notities: 'Bron: dekrommer.nl + carre.nl (jan 2025). Lichtplan toneel + zaal + trekkenlijst beschikbaar via carre.nl. Gebouwd 1887.',
+      images: []
+    },
+    {
+      id: 'v_chasse',
+      naam: 'Chassé Theater — Grote Zaal',
+      type: 'schouwburg',
+      stad: 'Breda',
+      adres: 'Claudius Prinsenlaan 8, Breda',
+      website: 'https://www.chasse.nl',
+      diepte: '17',
+      breedte: '18',
+      oppervlak: '306',
+      vliegerhoogte: '20',
+      vloertype: 'Toneel — max. belasting 500 kg/m²',
+      draagvermogen: '500',
+      capaciteit: '±1.200 zittend',
+      podiuminfo: 'Toneelopening: 18m breed × 9,5m hoog. Totale toneelbreedte incl. zijtoneel: 36m. Achtertoneel: 14m breed × 7m diep × 7m hoog. Vrije trekhoogte: 20m. 70 SynchroDisk lieren (elk 500kg), computergestuurd TNM. Prosceniumtrek 500kg. 16 punttrekken. Brandscherm aanwezig.',
+      lichtconsole: 'GrandMA dot2 XLF / Compulite Micron 4D / High End Full Boar (op aanvraag)',
+      dimmers: '309 kringen (30× 5kW + rest 3,6kW)',
+      geluidsconsole: '',
+      pa: 'SIAP geluidssysteem (line array per zijde + balkonondersteuning)',
+      lginfo: 'Dante audio-over-IP bekabeling. Regiepositie: 3,70m breed × 1,70m diep.',
+      td_naam: '',
+      td_email: 'backoffice@chasse.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: '',
+      afstand: '',
+      laadinfo: 'Tel: +31 (0)76 530 31 71',
+      notities: 'Ontwerp Herman Hertzberger (1995). Jaarlijks ±400.000 bezoekers. Grootste theater van Zuid-Nederland. Beschikt ook over middenzaal en kleine zaal.',
+      images: []
+    },
+    {
+      id: 'v_ita',
+      naam: 'ITA — Grote Zaal (v/h Stadsschouwburg Amsterdam)',
+      type: 'schouwburg',
+      stad: 'Amsterdam',
+      adres: 'Leidseplein 26, Amsterdam',
+      website: 'https://ita.nl',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '',
+      vloertype: 'Lijsttoneel',
+      draagvermogen: '',
+      capaciteit: '750 zittend (max 900)',
+      podiuminfo: 'Toneelopening manteau: min. 13,60m – max. 19m breed. Hoogte rideau: 0 – 8,75m. Achterwand toneel: 17,24m. Rijksmonument sinds 1982, gebouw uit 1894.',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: '',
+      lginfo: 'Technische specificaties beschikbaar via techniek@ita.nl',
+      td_naam: '',
+      td_email: 'techniek@ita.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: '',
+      afstand: '',
+      laadinfo: 'Nabij Leidseplein. Parkeergarage Europarking Marnixstraat op loopafstand.',
+      notities: 'Thuisbasis van ITA (Internationaal Theater Amsterdam). Tweede zaal: Rabozaal (±500 stoelen). Tram 1/2/5/7 richting Leidseplein.',
+      images: []
+    },
+    {
+      id: 'v_circustheater',
+      naam: 'AFAS Circustheater',
+      type: 'theater',
+      stad: 'Scheveningen',
+      adres: 'Circusstraat 4, Scheveningen',
+      website: 'https://www.stage-entertainment.nl/theaters/afas-circustheater-scheveningen',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '',
+      vloertype: 'Voormalige circuspiste — unieke ronde zaalopbouw',
+      draagvermogen: '',
+      capaciteit: '1.840 zittend (verkleind tot 200 mogelijk)',
+      podiuminfo: 'Piste: 750 personen. Ring: 1.050 personen. Podium verschuifbaar naar midden zaal. Geavanceerd lichtsysteem maakt zaal optisch kleiner. 10 multifunctionele nevenzalen. Gebouw uit 1904, verbouwd door architect Arno Meijs (1991/1993).',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: 'Line array systeem beide zijden podium + balkonondersteuning. Dante audio-over-IP.',
+      lginfo: 'Vaste musical-productie. Preferredpartner voor techniek: NFGD.',
+      td_naam: '',
+      td_email: 'info@circustheater.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: 'Parkeergarage direct naast theater',
+      afstand: '',
+      laadinfo: 'OV: tram 1 en 9 richting Scheveningen. Halte Circustheater voor de deur.',
+      notities: 'Eigendom en exploitatie: Stage Entertainment. Gesponsord door AFAS sinds 2011. Geschikt voor evenementen 5–1.840 personen. Groot LED-scherm op gevel.',
+      images: []
+    },
+    {
+      id: 'v_beatrix',
+      naam: 'Beatrix Theater',
+      type: 'theater',
+      stad: 'Utrecht',
+      adres: 'Jaarbeursplein, Utrecht',
+      website: 'https://www.stage-entertainment.nl/theaters/beatrix-theater-utrecht',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '',
+      vloertype: 'Musical-podium vaste configuratie',
+      draagvermogen: '',
+      capaciteit: '±1.500 zittend',
+      podiuminfo: 'Onderdeel van Beatrixgebouw / Utrechtse Jaarbeurs. Ontwerp architect Arno Meijs, geopend 1999. Overdag ook beschikbaar als congreslocatie.',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: 'Line array systeem. AES/EBU digitale verbinding regiepult – versterkerracks. Dante audio-over-IP in de zaal.',
+      lginfo: 'Gehoorondersteuning via radiofrequentie voor slechthorenden. Audiodescriptie via Earcatch-app.',
+      td_naam: '',
+      td_email: '',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: 'Parkeergarage Croeselaan (gehandicaptenparkeerplaatsen aanwezig)',
+      afstand: '',
+      laadinfo: 'NS Utrecht Centraal op 5 min. loopafstand (grotendeels overdekt). Tram 60/61 halte CS Jaarbeursplein.',
+      notities: 'Exploitant: Stage Entertainment. Vaste musical-locatie. Restaurant Queens in het theater. Klantenservice: 0900-1353.',
+      images: []
+    },
+    {
+      id: 'v_delamar',
+      naam: 'DeLaMar Theater',
+      type: 'theater',
+      stad: 'Amsterdam',
+      adres: 'Marnixstraat 402, Amsterdam',
+      website: 'https://www.delamar.nl',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '',
+      vloertype: 'Modern lijsttoneel',
+      draagvermogen: '',
+      capaciteit: '±1.500 zittend (hoofd- + kleine zaal)',
+      podiuminfo: 'Modern theatercomplex geopend in 2010. Twee zalen: Hoofdzaal en Kleine Zaal. Geavanceerde technische faciliteiten voor musicals, toneel en cabaret.',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: '',
+      lginfo: 'Technische specificaties beschikbaar via techniek@delamar.nl',
+      td_naam: '',
+      td_email: 'techniek@delamar.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: 'Parkeergarage Marnixstraat direct naast theater',
+      afstand: '',
+      laadinfo: 'Tram 7/10/17 halte Marnixstraat. Nabij Leidseplein.',
+      notities: 'Vernoemd naar Willem Jan Cornelis De Liefde (De La Mar). Een van de modernste theatergebouwen van Nederland. Breed programma: musicals, cabaret, toneel.',
+      images: []
+    },
+    {
+      id: 'v_groningen',
+      naam: 'Stadsschouwburg Groningen (SPOT)',
+      type: 'schouwburg',
+      stad: 'Groningen',
+      adres: 'Turfsingel 86, 9711 VX Groningen',
+      website: 'https://www.spotgroningen.nl',
+      diepte: '14.22',
+      breedte: '18.60',
+      oppervlak: '215',
+      vliegerhoogte: '8',
+      vloertype: 'Lijsttoneel',
+      draagvermogen: '',
+      capaciteit: '',
+      podiuminfo: 'Bruto speelvlak: 18,60m breed × 14,22m diep. Netto: 17,60m × 13,40m. Totale toneelbreedte incl. zijtoneel: 27,80m. Manteauopening: 11–13m. Orkestbak: diepte −3,93m, rand −6,40m. Portaalbrug: 0,5–8m. Podiumhoogte bij rij 1: 0,88m. Brandscherm aanwezig. Computergestuurde trekkenwand (TNM).',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: '',
+      lginfo: 'Technische tekeningen beschikbaar via spotgroningen.nl/informatie/voor-technici/',
+      td_naam: '',
+      td_email: 'techniekstadsschouwburg@spotgroningen.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '+31 (0)50 3680315',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: '',
+      afstand: '',
+      laadinfo: '',
+      notities: 'Bron: dekrommer.nl + spotgroningen.nl (jan 2025). Trekkenlijst beschikbaar als Google Spreadsheet.',
+      images: []
+    },
+    {
+      id: 'v_orpheus',
+      naam: 'Theater Orpheus Apeldoorn',
+      type: 'theater',
+      stad: 'Apeldoorn',
+      adres: 'Churchillplein 1, 7314 BZ Apeldoorn',
+      website: 'https://www.orpheus.nl',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '21',
+      vloertype: 'Toneel — draagvermogen 1000 kg/m²',
+      draagvermogen: '1000',
+      capaciteit: '',
+      podiuminfo: 'Trekkenwand STS, computergestuurd. Treksnelheid: 180 cm/sec (variabel). Roedelengte: 22m. Trekhoogte: 21m. Trekbelasting: 500kg standaard. Puntlast bij staaldraad: 175kg, tussen: 250kg. Roededoorsnede: 48mm. Zijtrekken L+R: 250kg. Voorfriestrek: 250kg. Punttakels: 9× 500kg. Zaaltrekken 500kg.',
+      lichtconsole: 'Compulite 4D / MA dot2',
+      dimmers: '48× Compulite 5kW (losse units)',
+      geluidsconsole: 'Midas Pro2',
+      pa: 'Meyersound: main M2D 18×, sub HP700 2×, infill UPA-1P 2× + UPA-2P 1×, voorrand mm4 6×, 2e balkon EV sx-80. Controller: Meyersound Galileo.',
+      lginfo: 'Krachtstroom: 4× 125A + 4× 63A CEE. DMX alle hoeken podium. Intercom: Riedel 4× draadloos + ASL 6× vast.',
+      td_naam: 'Toneelmeester',
+      td_email: 'techniek@orpheus.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '055 5270370',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: '',
+      afstand: '',
+      laadinfo: '',
+      notities: 'Bron: dekrommer.nl + orpheus.nl (jan 2025). Lichtplan + kaplijst beschikbaar via Google Drive (zie orpheus.nl).',
+      images: []
+    },
+    {
+      id: 'v_parktheater',
+      naam: 'Parktheater Eindhoven — Hertog Jan Zaal',
+      type: 'theater',
+      stad: 'Eindhoven',
+      adres: 'Elzentlaan 50, 5615 CE Eindhoven',
+      website: 'https://www.parktheater.nl',
+      diepte: '8.5',
+      breedte: '14',
+      oppervlak: '119',
+      vliegerhoogte: '23.5',
+      vloertype: 'Vlakke vloer mogelijk',
+      draagvermogen: '',
+      capaciteit: '',
+      podiuminfo: 'Toneelopening: 14m. Speelvloer: 12–14m breed × 8,5m diep. Trekhoogte: 23,5m. 52 trekken boven speelvloer (TNM). Trek 37–38 boven toneelopening. Trek 39–59 vrij boven tribune. 2 dockshelters per zaal (2,98 × 2,96m). Personen- en goederenlift aanwezig.',
+      lichtconsole: 'GrandMA1 Ultra Light / GrandMA2 Light / MA dot2 / Compulite Spark Top (op aanvraag)',
+      dimmers: '280 dimkringen (decentraal, kabelputten + dimmerracks)',
+      geluidsconsole: '',
+      pa: '',
+      lginfo: 'Lichtbrug vaste opstelling: 12× Niethammer 2kW. Horizonbatterij: ETC Selador LED. Multi: HAN16. Krachtstroom: 125A + 63A + 32A per zijde. DMX: 4 lijnen bij techniekplaatsen. Ethernet aansluitingen rondom speelvloer.',
+      td_naam: 'Wesley van der Lingen',
+      td_email: 'toneeltechniek@parktheater.nl',
+      lc_naam: '',
+      lc_contact: '040 2156150',
+      gc_naam: '',
+      gc_contact: '040 2156156',
+      laaddeur: '2.98 × 2.96',
+      laadperron: 'Dockshelter (2 stuks per zaal)',
+      parkeer: '',
+      afstand: 'Via goederenlift naar kleedkamerniveau',
+      laadinfo: 'Lift met stops op: expeditieterrein buiten, laad/los niveau, kleedkamerniveau.',
+      notities: 'Bron: dekrommer.nl + parktheater.nl (jan 2025). Trekkenlijst + lichtplan beschikbaar via Google Drive. Tel. algemeen: 040 2156156.',
+      images: []
+    },
+    {
+      id: 'v_luxor',
+      naam: 'Luxor Theater Rotterdam',
+      type: 'theater',
+      stad: 'Rotterdam',
+      adres: 'Posthumalaan 1, 3072 AG Rotterdam',
+      website: 'https://www.luxortheater.nl',
+      diepte: '',
+      breedte: '',
+      oppervlak: '',
+      vliegerhoogte: '',
+      vloertype: 'Musical-podium, lijsttoneel',
+      draagvermogen: '',
+      capaciteit: '1.500 zittend (grote zaal)',
+      podiuminfo: 'Nieuw gebouw geopend 2001. Grote zaal + Studio (kleine zaal). Gelegen nabij Rotterdam Centraal. Vaste musical-bespeler.',
+      lichtconsole: '',
+      dimmers: '',
+      geluidsconsole: '',
+      pa: '',
+      lginfo: 'Technische specificaties op aanvraag via techniek@luxortheater.nl',
+      td_naam: '',
+      td_email: 'techniek@luxortheater.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '',
+      laaddeur: '',
+      laadperron: '',
+      parkeer: 'Parkeergarage Willemsplein nabij',
+      afstand: '',
+      laadinfo: 'Metro/tram: halte Wilhelminaplein op loopafstand. Waterbus aanlegplaats nabij.',
+      notities: 'Een van de grootste musical-theaters van Nederland. Technische rider op aanvraag.',
+      images: [],
+      docs: []
+    },
+    {
+      id: 'v_ssu_blauw',
+      naam: 'Stadsschouwburg Utrecht - Blauwe Zaal',
+      type: 'theater',
+      stad: 'Utrecht',
+      adres: 'Lucasbolwerk 24, 3512 EJ Utrecht',
+      website: 'https://www.ssbu.nl',
+      diepte: '11',
+      breedte: '11',
+      oppervlak: '121',
+      vliegerhoogte: '4.8',
+      vloertype: 'Keroeing hardhout 22mm, vlakke vloer',
+      draagvermogen: '500',
+      capaciteit: 'Tribune: 176 | +voorzetrij: 192 | Ingeschoven: 225 max.',
+      podiuminfo: 'Vlakke vloer zaal, 2 opstellingen (met/zonder tribune). Afmetingen toneel: 11x11x4.8m. Zaalvloer loopt in ronding mee met pand. Geen voordoek. Grid: 5 truss carre gridjes + 1 trek achterop, hoogte 4.8m onderkant truss. Bediening truss/trekken ALLEEN door gecertificeerd personeel SSBU. Geen kapchangementen mogelijk. Balletvloer: 11.5x10.5m (zwart of wit). Regieplaats: rij 10, 2 tafels. Vleugel: Yamaha C3 (1992), 1.83x1.48m.',
+      lichtconsole: 'ETC Gio@5 + Faderwing (20 faders) + ETC Faderwing Grote Zaal (10 gemotoriseerde faders)',
+      dimmers: 'Grid: 53x shuko (dubbel). Vloer: 32x aansluitingen (4x8 Harting). Geen kleurenfilters (volledig LED). Rosco 114/119/132 op aanvraag.',
+      geluidsconsole: 'Digico SD11 + 2x D-rack (1 vast op FOH)',
+      pa: 'Meyer Sound: per kant UPQ top + UPJ fill (beide gevlogen) + LFC-750 sub (vloer, verplaatsbaar). Cluster: 2x UPJ gevlogen. Aansturing: Meyer Sound Galaxy 408 via XLR. Monitoren: 8x SoundProjects X-act.',
+      lginfo: 'Licht LED vast: 8x ETC Lustr2 horizonbak, 25x ETC Lustr X8 Fresnel, 20x ETC Lustr X8 Profiel, 22x ETC Source4wrd2 Parnell, 12x Ayrton Zonda3 Moving Wash, 6x Ayrton Stradale TC Moving Spot. Hazer: MDG ATMe. Intercom: 15x Riedel Bolero draadloos (gedeeld Grote Zaal). Draadloos: 2x Shure AD4Q Axient (8 kan.), 4x handheld AD1/KSM9, 4x beltpack AD2 (mini XLR TA4). Headsets: 7x DPA D:fine. Video: Epson EB-PQ2216B 4K 16.000lm + 3 lenzen. Schermen: 2x Stumpfl 400x235cm + 1x Projecta vast plafond 380x237cm. Scaler: Analogway Pulse2.',
+      td_naam: 'Planning & Productie',
+      td_email: 'planning.productie@ssbu.nl',
+      lc_naam: '',
+      lc_contact: '',
+      gc_naam: '',
+      gc_contact: '030-2324 109',
+      laaddeur: '149 cm breed',
+      laadperron: 'Rechterkant hoofdentree, vrachtwagens t/m 7.5m lengte (vergunning bij receptie)',
+      parkeer: 'Geen parkeren op terrein. Kortingskaarten bij receptie: Garage Kruisstraat (3 min.) of Garage Grifthoek (10 min.)',
+      afstand: 'Via goederenlift (240x165x450cm, max. 1250kg) naar zaal',
+      laadinfo: 'Wagens >7.5m: in overleg met P&P, eventueel laad/los grote zaal. Milieuzone Utrecht — dagontheffing via www.milieuzones.nl. Navigeer naar Lucasbolwerk 24.',
+      kleedkamers: '2 kleedkamers (toneelniveau)',
+      kleedkamer_cap: '2x 4-persoons, toegankelijk via trap. Mindervaliden: kleedruimte achtertoneel op aanvraag.',
+      artiestenfoyer: 'Gedeeld met Grote Zaal, 50 personen (40 zitplaatsen). Koffie/thee/water vrij. Koelkast, magnetrons, borden/bestek aanwezig. Keuken in overleg P&P.',
+      douches: 'Aanwezig naast kleedkamer. Toilet mindervaliden begane grond (lift). Wasmachine/droger bij Grote Zaal. Strijkplank/strijkijzer beschikbaar.',
+      catering: 'Artiestenfoyer met keuken (in overleg). Afluistering kleedkamers via Glennsound Devine speaker met volumeregeling.',
+      wifi: '',
+      prodkantoor: '',
+      toegankelijkheid: 'Kleedkamers via trap (niet rolstoeltoegankelijk). Kleedruimte achtertoneel mogelijk. Toilet mindervaliden begane grond.',
+      prodinfo: 'Afluistering: kleedkamers + artiestenfoyer gaan aan bij openen zaal voor publiek (tenzij anders gevraagd). Voorziening slechthorenden aanwezig (bij receptie). Aanvang avond: 20.30. Ochtend/middag in overleg.',
+      notities: 'Bron: Technische lijst Stadsschouwburg Utrecht — Blauwe Zaal, versie oktober 2024 (jan 2026 update). Volledige inventarislijst (microfoons, DI-boxes, DJ-materiaal) beschikbaar bij Planning & Productie.',
+      images: [],
+      docs: []
+    }
+  ];
+
+  nlVenues.forEach(v => venues.push(v));
+  save();
+  currentVenueId = 'v_carre';
+  renderSidebar();
+  renderDetail('v_carre');
+}
+</script>
+</body>
+</html>
