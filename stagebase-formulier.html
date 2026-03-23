@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StageBase — Technische Informatie Formulier</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #111213;
+  --surface: #1a1b1e;
+  --surface2: #222428;
+  --border: #32343a;
+  --accent: #e8c84a;
+  --text: #f0ede6;
+  --muted: #8a8880;
+  --font-display: 'Fraunces', serif;
+  --font-ui: 'Syne', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.logo { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.5px; color: var(--accent); line-height: 1; }
+.logo span { color: var(--text); font-weight: 300; font-style: italic; }
+.logo-underline { height: 2px; background: linear-gradient(to right, var(--accent), transparent); border-radius: 1px; margin-top: 3px; }
+.header-subtitle { font-family: var(--font-ui); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+
+/* HERO */
+.hero {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 48px 40px;
+  text-align: center;
+}
+.hero h1 { font-family: var(--font-display); font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+.hero h1 span { color: var(--accent); }
+.hero p { color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.7; font-size: 14px; }
+.hero-steps {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+.hero-step { text-align: center; }
+.hero-step-num {
+  width: 32px; height: 32px;
+  background: rgba(232,200,74,0.1);
+  border: 1px solid rgba(232,200,74,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+  color: var(--accent); margin: 0 auto 8px;
+}
+.hero-step-label { font-size: 12px; color: var(--muted); font-family: var(--font-ui); }
+
+/* FORM */
+.form-container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.form-section {
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.form-section-header {
+  padding: 14px 20px;
+  background: linear-gradient(to right, var(--surface2), var(--surface));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.form-section-icon { font-size: 16px; }
+.form-section-title {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  font-weight: 600;
+  color: var(--accent);
+  flex: 1;
+}
+.form-section-toggle { color: var(--muted); font-size: 12px; transition: transform .2s; }
+.form-section.collapsed .form-section-toggle { transform: rotate(-90deg); }
+.form-section.collapsed .form-section-body { display: none; }
+
+.form-section-body { padding: 20px; }
+
+.form-subsection { margin-bottom: 24px; }
+.form-subsection:last-child { margin-bottom: 0; }
+.form-subsection-title {
+  font-family: var(--font-ui);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(50,52,58,0.5);
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid.single { grid-template-columns: 1fr; }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  opacity: 0.85;
+  font-family: var(--font-body);
+}
+.form-label .optional { color: var(--muted); font-size: 9px; text-transform: none; letter-spacing: 0; }
+.form-input, .form-select, .form-textarea {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); font-size: 12px; }
+.form-textarea { min-height: 80px; resize: vertical; }
+.form-select option { background: var(--surface2); }
+
+/* PROGRESS */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--border);
+  z-index: 200;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width .3s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+/* SUBMIT */
+.submit-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 24px;
+}
+.submit-section p { color: var(--muted); font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+.btn-submit {
+  background: var(--accent);
+  color: #111213;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 48px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+.btn-submit:hover { background: #f0d460; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(232,200,74,0.3); }
+.btn-submit:active { transform: translateY(0); }
+
+/* SUCCESS */
+.success-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 500;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+.success-overlay.visible { display: flex; }
+.success-icon { font-size: 64px; margin-bottom: 24px; }
+.success-title { font-family: var(--font-display); font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+.success-title span { color: var(--accent); }
+.success-text { color: var(--muted); max-width: 480px; line-height: 1.7; }
+
+/* REQUIRED indicator */
+.required { color: var(--accent); margin-left: 2px; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+<header>
+  <div>
+    <div class="logo">Stage<span>Base</span></div>
+    <div class="logo-underline"></div>
+  </div>
+  <div class="header-subtitle">Technische Informatie Formulier</div>
+</header>
+
+<div class="hero">
+  <h1>Welkom bij <span>StageBase</span></h1>
+  <p>Via dit formulier kunt u de technische gegevens van uw venue aanleveren. Vul in wat u weet — lege velden kunt u altijd later aanvullen. Alle informatie wordt vertrouwelijk behandeld.</p>
+  <div class="hero-steps">
+    <div class="hero-step">
+      <div class="hero-step-num">1</div>
+      <div class="hero-step-label">Vul het formulier in</div>
+    </div>
+    <div class="hero-step">
+      <div class="hero-step-num">2</div>
+      <div class="hero-step-label">Verstuur uw gegevens</div>
+    </div>
+    <div class="hero-step">
+      <div class="hero-step-num">3</div>
+      <div class="hero-step-label">Wij verwerken de info</div>
+    </div>
+  </div>
+</div>
+
+<div class="form-container">
+<form id="venueForm" onsubmit="handleSubmit(event)">
+
+  <!-- ALGEMEEN -->
+  <div class="form-section" id="sec-algemeen">
+    <div class="form-section-header" onclick="toggleSection('sec-algemeen')">
+      <span class="form-section-icon">🏛️</span>
+      <span class="form-section-title">Algemene informatie</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-grid single">
+        <div class="form-group">
+          <label class="form-label">Naam venue <span class="required">*</span></label>
+          <input type="text" class="form-input" name="naam" placeholder="bijv. Koninklijk Theater Carré" required>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label">Stad <span class="required">*</span></label>
+          <input type="text" class="form-input" name="stad" placeholder="bijv. Amsterdam" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type venue</label>
+          <select class="form-select" name="type">
+            <option value="theater">Theater</option>
+            <option value="poppodium">Poppodium</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="form-group">
+          <label class="form-label">Adres</label>
+          <input type="text" class="form-input" name="adres" placeholder="bijv. Amstel 115-125, 1018 EM Amsterdam">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Website</label>
+          <input type="text" class="form-input" name="website" placeholder="bijv. https://carre.nl">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TONEEL & AFMETINGEN -->
+  <div class="form-section collapsed" id="sec-toneel">
+    <div class="form-section-header" onclick="toggleSection('sec-toneel')">
+      <span class="form-section-icon">🎭</span>
+      <span class="form-section-title">Toneel & Afmetingen</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Afmetingen</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Breedte (m)</label><input type="text" class="form-input" name="breedte" placeholder="bijv. 14"></div>
+          <div class="form-group"><label class="form-label">Diepte (m)</label><input type="text" class="form-input" name="diepte" placeholder="bijv. 12"></div>
+          <div class="form-group"><label class="form-label">Manteau breedte</label><input type="text" class="form-input" name="speelvlak_bruto" placeholder="bijv. 9-14m"></div>
+          <div class="form-group"><label class="form-label">Portaalhoogte</label><input type="text" class="form-input" name="portaalbrug" placeholder="bijv. 0.5-9m"></div>
+          <div class="form-group"><label class="form-label">Hoogte toneeltoren (m)</label><input type="text" class="form-input" name="vliegerhoogte" placeholder="bijv. 20"></div>
+          <div class="form-group"><label class="form-label">Toneel opening</label><input type="text" class="form-input" name="oppervlak" placeholder="bijv. 14m breed x 9m hoog"></div>
+          <div class="form-group"><label class="form-label">Vaste opening</label><input type="text" class="form-input" name="vaste_opening" placeholder="bijv. 12m"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Vloer</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Vloertype</label><input type="text" class="form-input" name="vloertype" placeholder="bijv. Keroewing hardhout"></div>
+          <div class="form-group"><label class="form-label">Vloer schuin of recht</label><input type="text" class="form-input" name="vloer_schuin" placeholder="bijv. Recht"></div>
+          <div class="form-group"><label class="form-label">Vloerbelasting (kg/m²)</label><input type="text" class="form-input" name="draagvermogen" placeholder="bijv. 500"></div>
+          <div class="form-group"><label class="form-label">Schroeven toegestaan</label><select class="form-select" name="vloer_schroeven"><option value="">Kies...</option><option>Ja</option><option>Nee</option><option>In overleg</option></select></div>
+          <div class="form-group"><label class="form-label">Kabelgoten aanwezig</label><select class="form-select" name="vloer_goten"><option value="">Kies...</option><option>Ja</option><option>Nee</option></select></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Voordoek & Afstopping</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Voordoek kleur</label><input type="text" class="form-input" name="voordoek_kleur" placeholder="bijv. Rood"></div>
+          <div class="form-group"><label class="form-label">Voordoek bediening</label><input type="text" class="form-input" name="voordoek_bediening" placeholder="bijv. Grieks handmatig links"></div>
+          <div class="form-group"><label class="form-label">Poten</label><input type="text" class="form-input" name="afstopping_poten" placeholder="bijv. 7 sets 8.5m hoog"></div>
+          <div class="form-group"><label class="form-label">Friezen</label><input type="text" class="form-input" name="afstopping_friezen" placeholder="bijv. 5 stuks"></div>
+          <div class="form-group"><label class="form-label">Horizon</label><input type="text" class="form-input" name="afstopping_horizon" placeholder="bijv. Wit, vast in laatste trek"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Orkestbak</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Breedte</label><input type="text" class="form-input" name="orkestbak_breedte" placeholder="bijv. 14.52m"></div>
+          <div class="form-group"><label class="form-label">Diepte</label><input type="text" class="form-input" name="orkestbak_diepte" placeholder="bijv. 4.5m"></div>
+          <div class="form-group"><label class="form-label">Hoogte t.b.v. vloer</label><input type="text" class="form-input" name="orkestbak_hoogte" placeholder="bijv. Variabel 0 tot -2m"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREKKENWAND -->
+  <div class="form-section collapsed" id="sec-trekken">
+    <div class="form-section-header" onclick="toggleSection('sec-trekken')">
+      <span class="form-section-icon">⚙️</span>
+      <span class="form-section-title">Trekkenwand</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Trekkenveld</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Fabrikant</label><input type="text" class="form-input" name="trekken_fabrikant" placeholder="bijv. Waagner-Biro"></div>
+          <div class="form-group"><label class="form-label">Bediening</label><input type="text" class="form-input" name="trekken_bediening" placeholder="bijv. Links"></div>
+          <div class="form-group"><label class="form-label">Aantal trekken</label><input type="text" class="form-input" name="trekken_aantal" placeholder="bijv. 68"></div>
+          <div class="form-group"><label class="form-label">Roedelengte (m)</label><input type="text" class="form-input" name="trekken_breedte" placeholder="bijv. 18m"></div>
+          <div class="form-group"><label class="form-label">Max. belasting (kg)</label><input type="text" class="form-input" name="trekken_belasting" placeholder="bijv. 500"></div>
+          <div class="form-group"><label class="form-label">Max. hoogte (m)</label><input type="text" class="form-input" name="trekken_hoogte" placeholder="bijv. 20"></div>
+          <div class="form-group"><label class="form-label">Max. laagte (m)</label><input type="text" class="form-input" name="trekken_laagte" placeholder="bijv. 0.10"></div>
+          <div class="form-group"><label class="form-label">Max. snelheid (m/s)</label><input type="text" class="form-input" name="trekken_snelheid" placeholder="bijv. 1.8"></div>
+          <div class="form-group"><label class="form-label">Afstand tussen trekken (m)</label><input type="text" class="form-input" name="trekken_afstand" placeholder="bijv. 0.20"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Zijtrekken</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Aantal zijtrekken links</label><input type="text" class="form-input" name="zijtrekken_links" placeholder="bijv. 2"></div>
+          <div class="form-group"><label class="form-label">Aantal zijtrekken rechts</label><input type="text" class="form-input" name="zijtrekken_rechts" placeholder="bijv. 2"></div>
+          <div class="form-group"><label class="form-label">Max. belasting zijtrekken (kg)</label><input type="text" class="form-input" name="zijtrekken_belasting" placeholder="bijv. 300"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Punttrekken</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Aantal punttrekken</label><input type="text" class="form-input" name="punttrekken_aantal" placeholder="bijv. 6"></div>
+          <div class="form-group"><label class="form-label">Max. belasting (kg)</label><input type="text" class="form-input" name="punttrekken_belasting" placeholder="bijv. 250"></div>
+          <div class="form-group"><label class="form-label">Snelheid (m/s)</label><input type="text" class="form-input" name="punttrekken_snelheid" placeholder="bijv. 1.8"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KRACHTSTROOM -->
+  <div class="form-section collapsed" id="sec-kracht">
+    <div class="form-section-header" onclick="toggleSection('sec-kracht')">
+      <span class="form-section-icon">⚡</span>
+      <span class="form-section-title">Krachtstroom</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">125 Ampère</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Links</label><input type="text" class="form-input" name="kracht_125_links" placeholder="bijv. Achter toneel links"></div>
+          <div class="form-group"><label class="form-label">Rechts</label><input type="text" class="form-input" name="kracht_125_rechts" placeholder="bijv. Achter toneel rechts"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">63 Ampère</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Links</label><input type="text" class="form-input" name="kracht_63_links" placeholder="bijv. Toneel links voor"></div>
+          <div class="form-group"><label class="form-label">Rechts</label><input type="text" class="form-input" name="kracht_63_rechts" placeholder="bijv. Toneel rechts voor"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">32 Ampère</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Links</label><input type="text" class="form-input" name="kracht_32_links" placeholder="bijv. Toneel links"></div>
+          <div class="form-group"><label class="form-label">Rechts</label><input type="text" class="form-input" name="kracht_32_rechts" placeholder="bijv. Toneel rechts"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">16 Ampère</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Links</label><input type="text" class="form-input" name="kracht_16_links" placeholder="bijv. Rondom toneel"></div>
+          <div class="form-group"><label class="form-label">Rechts</label><input type="text" class="form-input" name="kracht_16_rechts" placeholder="bijv. Rondom toneel"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Geluid & Overig</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">32A t.b.v. geluid</label><input type="text" class="form-input" name="krachtstroom_geluid" placeholder="bijv. Toneel links voor"></div>
+          <div class="form-group"><label class="form-label">Schone voeding geluid</label><input type="text" class="form-input" name="krachtstroom_schoon" placeholder="bijv. Ja, apart circuit"></div>
+          <div class="form-group"><label class="form-label">Type connector</label><input type="text" class="form-input" name="krachtstroom_connector" placeholder="bijv. CEE, Powerlock, Shuko"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LICHT -->
+  <div class="form-section collapsed" id="sec-licht">
+    <div class="form-section-header" onclick="toggleSection('sec-licht')">
+      <span class="form-section-icon">💡</span>
+      <span class="form-section-title">Licht</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Lichttafel</div>
+        <div class="form-grid single">
+          <div class="form-group"><label class="form-label">Lichttafel</label><input type="text" class="form-input" name="lichtconsole" placeholder="bijv. GrandMA3 Light"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Posities</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Zaalbrug</label><input type="text" class="form-input" name="licht_zaalbrug" placeholder="bijv. 16x RJ 714 2kW zoom"></div>
+          <div class="form-group"><label class="form-label">Manteau</label><input type="text" class="form-input" name="licht_manteau" placeholder="bijv. 9x Niethammer L+R"></div>
+          <div class="form-group"><label class="form-label">Koven</label><input type="text" class="form-input" name="licht_koven" placeholder="bijv. 12x ETC S4"></div>
+          <div class="form-group"><label class="form-label">Portaal</label><input type="text" class="form-input" name="licht_portaal" placeholder="bijv. 8x PC 2kW"></div>
+          <div class="form-group"><label class="form-label">Zijbruggen</label><input type="text" class="form-input" name="licht_zijbruggen" placeholder="bijv. 6x Fresnel L+R"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Apparatuur</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Los licht</label><input type="text" class="form-input" name="bewegend_licht" placeholder="bijv. PAR64, PC, profielen"></div>
+          <div class="form-group"><label class="form-label">Bewegend licht</label><input type="text" class="form-input" name="licht_bewegend" placeholder="bijv. 12x Robe Ledbeam 150"></div>
+          <div class="form-group"><label class="form-label">Rookmachine / hazer</label><input type="text" class="form-input" name="licht_rook" placeholder="bijv. MDG Hazer, Swefog"></div>
+          <div class="form-group"><label class="form-label">Dimmers / kringen</label><input type="text" class="form-input" name="dimmers" placeholder="bijv. 240x 2.5kW"></div>
+          <div class="form-group"><label class="form-label">Volgspots</label><input type="text" class="form-input" name="volgspot" placeholder="bijv. 2x RJ Victor 1200W HMI"></div>
+          <div class="form-group"><label class="form-label">Horizonbatterij</label><input type="text" class="form-input" name="licht_horizon" placeholder="bijv. Selador LED 12m"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">DMX Netwerk</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Protocol</label><input type="text" class="form-input" name="dmx_protocol" placeholder="bijv. sACN, Art-Net"></div>
+          <div class="form-group"><label class="form-label">Aantal universes</label><input type="text" class="form-input" name="dmx_universes" placeholder="bijv. 8"></div>
+          <div class="form-group"><label class="form-label">Netwerk</label><input type="text" class="form-input" name="dmx_netwerk" placeholder="bijv. Ethernet verdeeld door zaal"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GELUID -->
+  <div class="form-section collapsed" id="sec-geluid">
+    <div class="form-section-header" onclick="toggleSection('sec-geluid')">
+      <span class="form-section-icon">🔊</span>
+      <span class="form-section-title">Geluid</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Bediening</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Mengtafel</label><input type="text" class="form-input" name="geluidsconsole" placeholder="bijv. DiGiCo SD10"></div>
+          <div class="form-group"><label class="form-label">Geluidprocessor</label><input type="text" class="form-input" name="geluid_processor" placeholder="bijv. Meyer Galaxy 616"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">PA Systeem</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Main clusters</label><input type="text" class="form-input" name="pa" placeholder="bijv. d&b V-Series L+R"></div>
+          <div class="form-group"><label class="form-label">Cluster balkon</label><input type="text" class="form-input" name="geluid_balkon" placeholder="bijv. 4x d&b V12"></div>
+          <div class="form-group"><label class="form-label">Subwoofer</label><input type="text" class="form-input" name="geluid_sub" placeholder="bijv. 2x d&b V-Sub"></div>
+          <div class="form-group"><label class="form-label">Versterkers</label><input type="text" class="form-input" name="monitoring" placeholder="bijv. d&b 30D"></div>
+          <div class="form-group"><label class="form-label">Infill</label><input type="text" class="form-input" name="geluid_infill" placeholder="bijv. 2x d&b E8"></div>
+          <div class="form-group"><label class="form-label">Frontfill</label><input type="text" class="form-input" name="geluid_frontfill" placeholder="bijv. 4x Meyer MM-4XP"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Monitoring & Overig</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Monitorsysteem</label><input type="text" class="form-input" name="geluid_monitor" placeholder="bijv. 6x JBL SRX712M"></div>
+          <div class="form-group"><label class="form-label">Delay systeem</label><input type="text" class="form-input" name="geluid_delay" placeholder="bijv. 5x d&b E4 under balcony"></div>
+          <div class="form-group"><label class="form-label">Microfoons</label><input type="text" class="form-input" name="microfoons" placeholder="bijv. AKG, Neumann, Shure"></div>
+          <div class="form-group"><label class="form-label">D.I. boxes</label><input type="text" class="form-input" name="multikabel" placeholder="bijv. 4x BSS AR133"></div>
+          <div class="form-group"><label class="form-label">Akoestiek</label><input type="text" class="form-input" name="geluid_akoestiek" placeholder="bijv. Variabele akoestiek 1.2-2.4s"></div>
+          <div class="form-group"><label class="form-label">Draadloos frequentiebereik</label><input type="text" class="form-input" name="draadloos_freq" placeholder="bijv. 470-636 MHz"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Patch</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Patch / stagebox</label><input type="text" class="form-input" name="patch_licht" placeholder="bijv. 48x XLR L+R toneel"></div>
+          <div class="form-group"><label class="form-label">Multikabel</label><input type="text" class="form-input" name="multikabel2" placeholder="bijv. 36-parig vast L→FOH"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Communicatie</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Systeem</label><input type="text" class="form-input" name="intercom" placeholder="bijv. Riedel Bolero"></div>
+          <div class="form-group"><label class="form-label">Aantal beltpacks</label><input type="text" class="form-input" name="intercom_beltpacks" placeholder="bijv. 15"></div>
+          <div class="form-group"><label class="form-label">Vaste beltpacks</label><input type="text" class="form-input" name="intercom_vast" placeholder="bijv. 8"></div>
+          <div class="form-group"><label class="form-label">Draadloze beltpacks</label><input type="text" class="form-input" name="intercom_draadloos" placeholder="bijv. 7"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIDEO -->
+  <div class="form-section collapsed" id="sec-video">
+    <div class="form-section-header" onclick="toggleSection('sec-video')">
+      <span class="form-section-icon">📽️</span>
+      <span class="form-section-title">Video</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Beamer</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Merk / type</label><input type="text" class="form-input" name="video_beamer" placeholder="bijv. Panasonic PT-RQ25K"></div>
+          <div class="form-group"><label class="form-label">Lumen</label><input type="text" class="form-input" name="video_lumen" placeholder="bijv. 16.000 lm"></div>
+          <div class="form-group"><label class="form-label">Resolutie</label><input type="text" class="form-input" name="video_resolutie" placeholder="bijv. 4K / WUXGA"></div>
+          <div class="form-group"><label class="form-label">Lens</label><input type="text" class="form-input" name="video_lens" placeholder="bijv. 1.7-2.4:1"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Projectiescherm</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Doorzicht of opzicht</label><select class="form-select" name="video_scherm_type"><option value="">Kies...</option><option>Doorzicht</option><option>Opzicht</option></select></div>
+          <div class="form-group"><label class="form-label">Ratio</label><input type="text" class="form-input" name="video_ratio" placeholder="bijv. 16:9"></div>
+          <div class="form-group"><label class="form-label">Totale afmeting</label><input type="text" class="form-input" name="video_afmeting" placeholder="bijv. 8 x 4.5m"></div>
+          <div class="form-group"><label class="form-label">Netto beeldgebied</label><input type="text" class="form-input" name="video_beeldgebied" placeholder="bijv. 7.5 x 4.2m"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Videoprocessor</div>
+        <div class="form-grid single">
+          <div class="form-group"><label class="form-label">Processor</label><input type="text" class="form-input" name="video_processor" placeholder="bijv. Analog Way Pulse2"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">LED</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Afmeting</label><input type="text" class="form-input" name="led_afmeting" placeholder="bijv. 6 x 3m"></div>
+          <div class="form-group"><label class="form-label">Type / merk</label><input type="text" class="form-input" name="led_type" placeholder="bijv. ROE Black Pearl BP2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAAD & LOS -->
+  <div class="form-section collapsed" id="sec-laad">
+    <div class="form-section-header" onclick="toggleSection('sec-laad')">
+      <span class="form-section-icon">🚛</span>
+      <span class="form-section-title">Laad & Los / Hoogwerkers</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Laad & Los</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Laaddeur (b × h)</label><input type="text" class="form-input" name="laaddeur" placeholder="bijv. 4m × 4.5m"></div>
+          <div class="form-group"><label class="form-label">Max. doorrijhoogte</label><input type="text" class="form-input" name="laad_doorrijhoogte" placeholder="bijv. 4m"></div>
+          <div class="form-group"><label class="form-label">Aantal vrachtwagens tegelijk</label><input type="text" class="form-input" name="laad_vrachtwagens" placeholder="bijv. 2"></div>
+          <div class="form-group"><label class="form-label">Laadperron</label><input type="text" class="form-input" name="laadperron" placeholder="bijv. Gelijkvloers / 0.9m dock"></div>
+          <div class="form-group"><label class="form-label">Lift afmetingen</label><input type="text" class="form-input" name="lift" placeholder="bijv. 0.89 × 1.3m, 500kg"></div>
+          <div class="form-group"><label class="form-label">Afstand → podium</label><input type="text" class="form-input" name="afstand" placeholder="bijv. 15m via lift"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Parkeren & Routing</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Vrachtwagen parkeren</label><input type="text" class="form-input" name="parkeer" placeholder="bijv. 3 vrachtwagens mogelijk"></div>
+          <div class="form-group"><label class="form-label">Uitstootvrije zone</label><select class="form-select" name="uitstootvrij"><option value="">Kies...</option><option>Ja</option><option>Nee</option></select></div>
+          <div class="form-group"><label class="form-label">Milieu-ontheffing</label><input type="text" class="form-input" name="parkeer_milieu" placeholder="bijv. Vereist voor binnenstad"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Hoogwerkers</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Hoogwerker beschikbaar</label><select class="form-select" name="hoogwerker"><option value="">Kies...</option><option>Ja</option><option>Nee</option><option>In overleg</option></select></div>
+          <div class="form-group"><label class="form-label">Max. werkhoogte</label><input type="text" class="form-input" name="hoogwerker_hoogte" placeholder="bijv. 12m"></div>
+          <div class="form-group"><label class="form-label">Type</label><input type="text" class="form-input" name="hoogwerker_type" placeholder="bijv. Telescopisch, schaar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTIE -->
+  <div class="form-section collapsed" id="sec-prod">
+    <div class="form-section-header" onclick="toggleSection('sec-prod')">
+      <span class="form-section-icon">👥</span>
+      <span class="form-section-title">Productie & Kleedkamers</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Zaal</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Capaciteit zaal</label><input type="text" class="form-input" name="capaciteit" placeholder="bijv. 949 (zaal 569 + balkon 380)"></div>
+          <div class="form-group"><label class="form-label">Openingstijden</label><input type="text" class="form-input" name="prod_openingstijden" placeholder="bijv. 08:00 - 24:00"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Kleedkamers</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Aantal kleedkamers</label><input type="text" class="form-input" name="kleedkamers" placeholder="bijv. 10"></div>
+          <div class="form-group"><label class="form-label">Douches</label><input type="text" class="form-input" name="douches" placeholder="bijv. 10 douches"></div>
+          <div class="form-group"><label class="form-label">Toiletten</label><input type="text" class="form-input" name="prod_toiletten" placeholder="bijv. 6 toiletten m/v"></div>
+          <div class="form-group"><label class="form-label">Wasmachines</label><input type="text" class="form-input" name="wasmachine" placeholder="bijv. 2 stuks"></div>
+          <div class="form-group"><label class="form-label">Drogers</label><input type="text" class="form-input" name="prod_drogers" placeholder="bijv. 2 stuks"></div>
+          <div class="form-group"><label class="form-label">Wasaansluitingen</label><input type="text" class="form-input" name="prod_wasaansluitingen" placeholder="bijv. Ja, 2e etage"></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Faciliteiten</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Artiestenfoyer</label><input type="text" class="form-input" name="artiestenfoyer" placeholder="bijv. Ja, 40 personen"></div>
+          <div class="form-group"><label class="form-label">Catering / keuken</label><input type="text" class="form-input" name="catering" placeholder="bijv. Magnetron, koelkast, afwas"></div>
+          <div class="form-group"><label class="form-label">Wifi beschikbaar</label><select class="form-select" name="wifi"><option value="">Kies...</option><option>Ja</option><option>Nee</option></select></div>
+          <div class="form-group"><label class="form-label">Productiekantoren</label><input type="text" class="form-input" name="prodkantoor" placeholder="bijv. 2 kantoren beschikbaar"></div>
+          <div class="form-group"><label class="form-label">Vleugel / piano</label><input type="text" class="form-input" name="vleugel" placeholder="bijv. Steinway D (442Hz)"></div>
+          <div class="form-group"><label class="form-label">Repetitieruimte</label><input type="text" class="form-input" name="prod_repetitie" placeholder="bijv. Ja, 15x10m beschikbaar"></div>
+          <div class="form-group"><label class="form-label">Afkijkmonitoren</label><input type="text" class="form-input" name="prod_afkijk" placeholder="bijv. Ja, kleedkamers + foyer"></div>
+          <div class="form-group"><label class="form-label">Plek voor castbus / nightliner</label><input type="text" class="form-input" name="prod_bus" placeholder="bijv. Ja, achterzijde gebouw"></div>
+          <div class="form-group"><label class="form-label">Omroepsysteem</label><select class="form-select" name="prod_omroep"><option value="">Kies...</option><option>Ja</option><option>Nee</option></select></div>
+          <div class="form-group"><label class="form-label">EHBO / AED aanwezig</label><select class="form-select" name="prod_ehbo"><option value="">Kies...</option><option>Ja</option><option>Nee</option></select></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACTPERSONEN -->
+  <div class="form-section collapsed" id="sec-contact">
+    <div class="form-section-header" onclick="toggleSection('sec-contact')">
+      <span class="form-section-icon">👤</span>
+      <span class="form-section-title">Contactpersonen</span>
+      <span class="form-section-toggle">▾</span>
+    </div>
+    <div class="form-section-body">
+      <div class="form-subsection">
+        <div class="form-subsection-title">Hoofdtechniek / Toneelmeester</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Naam <span class="required">*</span></label><input type="text" class="form-input" name="td_naam" placeholder="Voor- en achternaam" required></div>
+          <div class="form-group"><label class="form-label">Telefoonnummer</label><input type="text" class="form-input" name="td_tel" placeholder="bijv. 020-1234567"></div>
+          <div class="form-group"><label class="form-label">E-mailadres <span class="required">*</span></label><input type="email" class="form-input" name="td_email" placeholder="naam@theater.nl" required></div>
+        </div>
+      </div>
+      <div class="form-subsection">
+        <div class="form-subsection-title">Productie / Sales</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Naam</label><input type="text" class="form-input" name="sales_naam" placeholder="Voor- en achternaam"></div>
+          <div class="form-group"><label class="form-label">Telefoonnummer</label><input type="text" class="form-input" name="sales_tel" placeholder="bijv. 020-1234567"></div>
+          <div class="form-group"><label class="form-label">E-mailadres</label><input type="email" class="form-input" name="sales_email" placeholder="naam@theater.nl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-section">
+    <p>Bedankt voor het invullen van dit formulier. Na verzending nemen wij contact met u op ter bevestiging. Velden die u nu niet kunt invullen kunt u later aanvullen.</p>
+    <button type="submit" class="btn-submit">Verstuur gegevens →</button>
+  </div>
+
+</form>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-icon">✓</div>
+  <div class="success-title">Bedankt, <span id="successName"></span>!</div>
+  <p class="success-text">Uw technische gegevens zijn ontvangen. Wij verwerken de informatie en nemen binnen 2 werkdagen contact met u op ter bevestiging.</p>
+  <p class="success-text" style="margin-top:16px;font-size:12px">— Het StageBase team</p>
+</div>
+
+<script>
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+  updateProgress();
+}
+
+function updateProgress() {
+  const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+  const filled = Array.from(inputs).filter(i => i.value.trim() !== '').length;
+  const pct = Math.round((filled / inputs.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+  el.addEventListener('input', updateProgress);
+  el.addEventListener('change', updateProgress);
+});
+
+function handleSubmit(e) {
+  e.preventDefault();
+  const form = document.getElementById('venueForm');
+  const data = {};
+  new FormData(form).forEach((val, key) => { if (val) data[key] = val; });
+
+  // Show success
+  document.getElementById('successName').textContent = data.naam || 'theater';
+  document.getElementById('successOverlay').classList.add('visible');
+
+  // Download JSON for StageBase import
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (data.naam || 'venue').replace(/\s+/g, '-').toLowerCase() + '-stagebase.json';
+  a.click();
+}
+</script>
+</body>
+</html>
